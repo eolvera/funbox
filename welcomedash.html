@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+    }
+    header {
+      background: #2d3748;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+    .container {
+      padding: 2rem;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    canvas {
+      max-width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Your Business Dashboard</h1>
+  </header>
+
+  <div class="container">
+    <div class="dashboard">
+      <!-- MTD Summary -->
+      <div class="card">
+        <h2>MTD Summary</h2>
+        <ul>
+          <li>Sales: $145,000</li>
+          <li>Credits: $12,300</li>
+          <li>Chargebacks: $1,230</li>
+          <li>Deposits: $138,500</li>
+          <li>Returns: $3,450</li>
+        </ul>
+      </div>
+
+      <!-- Top 10 Clients -->
+      <div class="card">
+        <h2>Top 10 Clients</h2>
+        <table>
+          <thead><tr><th>Client</th><th>Volume</th></tr></thead>
+          <tbody>
+      <tr><td>BrightSky Electronics - Online Retailer</td><td>$25,000</td></tr>
+      <tr><td>FreshBloom Florist - Subscription Service</td><td>$22,400</td></tr>
+      <tr><td>QuickMed Express - Telehealth Provider</td><td>$19,750</td></tr>
+      <tr><td>UrbanBites - Food Delivery Vendor</td><td>$18,300</td></tr>
+      <tr><td>AutoZen Motors - Car Parts Retailer</td><td>$16,400</td></tr>
+      <tr><td>NextWave Fitness - Online Memberships</td><td>$15,200</td></tr>
+      <tr><td>EliteEdge Marketing - B2B Services</td><td>$14,800</td></tr>
+      <tr><td>SecureDocs Vault - Digital Storage</td><td>$13,100</td></tr>
+      <tr><td>HealthNest Labs - Supplements Vendor</td><td>$12,600</td></tr>
+      <tr><td>DreamStay Rentals - Vacation Property</td><td>$11,950</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pie Chart: Card Present vs Not Present -->
+      <div class="card">
+        <h2>Card Present vs Card Not Present</h2>
+        <canvas id="cardPieChart"></canvas>
+      </div>
+
+      <!-- Top Gross Volume Merchants -->
+      <div class="card">
+        <h2>Top Gross Volume Merchants</h2>
+        <ul>
+          <li>Merchant A - $75,000</li>
+          <li>Merchant B - $58,200</li>
+          <li>Merchant C - $47,300</li>
+        </ul>
+      </div>
+
+      <!-- YTD Volume by Month -->
+      <div class="card" style="grid-column: span 2;">
+        <h2>YTD Monthly Merchant Volumes</h2>
+        <canvas id="ytdVolumeChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Card Present vs Card Not Present Pie Chart
+    new Chart(document.getElementById("cardPieChart"), {
+      type: "pie",
+      data: {
+        labels: ["Card Present", "Card Not Present"],
+        datasets: [{
+          data: [60, 40],
+          backgroundColor: ["#48bb78", "#ed8936"],
+        }]
+      },
+      options: {
+        responsive: true
+      }
+    });
+
+    // YTD Monthly Merchant Volumes Line Chart
+    new Chart(document.getElementById("ytdVolumeChart"), {
+      type: "line",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+          label: "Volume ($)",
+          data: [12000, 15000, 13000, 18000, 17000, 20000, 19000, 22000, 21000, 25000, 24000, 26000],
+          backgroundColor: "rgba(66, 153, 225, 0.2)",
+          borderColor: "#4299e1",
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: false
+          }
+        },
+        responsive: true
+      }
+    });
+  </script>
+</body>
+</html>
