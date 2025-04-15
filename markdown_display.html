@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Management Essays</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #1e3a8a;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        pre {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        p {
+            margin: 15px 0;
+        }
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Risk Management Essay</h1>
+    <div id="content"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Fetch the Markdown file from your repository
+        fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to fetch Markdown file');
+                return response.text();
+            })
+            .then(data => {
+                // Render Markdown to HTML using marked.js
+                document.getElementById('content').innerHTML = marked.parse(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('content').innerHTML = '<p>Error loading Markdown content. Please check the file path or repository settings.</p>';
+            });
+    </script>
+</body>
+</html>
