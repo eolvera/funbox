@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merchant Periodic Review Project Board</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fa;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+      color: white;
+      text-align: center;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    section {
+      padding: 2rem;
+      margin: 1rem auto;
+      max-width: 1200px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      color: #1e3a8a;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 0.5rem;
+    }
+    svg {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .comment {
+      font-style: italic;
+      color: #6b7280;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-left: 4px solid #3b82f6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+      border: 1px solid #e5e7eb;
+    }
+    th {
+      background-color: #1e3a8a;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .progress-bar {
+      background-color: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+      height: 20px;
+      margin: 0.5rem 0;
+    }
+    .progress {
+      height: 100%;
+      transition: width 0.3s;
+    }
+    .completed { fill: #22c55e; }
+    .in-progress { fill: #f59e0b; }
+    .pending { fill: #ef4444; }
+    .lifecycle {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+    .lifecycle-stage {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      margin: 0 0.5rem;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+    .lifecycle-stage h4 {
+      margin: 0 0 0.5rem;
+      color: #1e3a8a;
+    }
+    input[type="checkbox"] {
+      margin-right: 0.5rem;
+    }
+    .tooltip {
+      position: absolute;
+      background: #1e3a8a;
+      color: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Merchant Periodic Review Project Board</h1>
+    <p>Tracking Compliance and Risk Management Tasks</p>
+  </header>
+
+  <div class="tooltip"></div>
+
+  <section id="overview">
+    <h2>Review Progress Overview</h2>
+    <svg id="projectBoard" width="1000" height="400"></svg>
+    <div class="comment">
+      This interactive stacked bar chart visualizes the progress of merchant review tasks (e.g., KYC/AML, FICO updates) across completed, in-progress, and pending statuses. Hovering over segments reveals exact percentages, enabling quick identification of bottlenecks. In real-world scenarios, this supports BSA/AML compliance and KYC/KYB due diligence by prioritizing overdue tasks and ensuring thorough documentation for audits, aligning with risk management goals.
+    </div>
+  </section>
+
+  <section id="task-details">
+    <h2>Task Details by Merchant</h2>
+    <table id="taskTable">
+      <thead>
+        <tr>
+          <th>Merchant DBA</th>
+          <th>MCC</th>
+          <th>Onboarding Date</th>
+          <th>Task</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="comment">
+      This table lists specific tasks for each merchant, including their DBA, MCC, and onboarding date. Checkboxes allow risk analysts to mark tasks as completed, facilitating real-time tracking of compliance and review progress.
+    </div>
+  </section>
+
+  <section id="lifecycle">
+    <h2>Merchant Risk Management Lifecycle</h2>
+    <div class="lifecycle">
+      <div class="lifecycle-stage">
+        <h4>Onboarding</h4>
+        <p>Initial KYC/KYB checks, business verification.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Processing History</h4>
+        <p>Monitor transaction volume, chargebacks, refunds.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Account Limits</h4>
+        <p>Set initial transaction and volume limits.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Flagged Entries</h4>
+        <p>Identify suspicious activities or compliance issues.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Periodic Review</h4>
+        <p>Conduct KYC/AML, FICO, and business status reviews.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Assessment of Limits</h4>
+        <p>Evaluate need for limit adjustments.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Applied Limit Changes</h4>
+        <p>Implement new limits based on review.</p>
+      </div>
+      <div class="lifecycle-stage">
+        <h4>Processing/Holds/Termination</h4>
+        <p>Adjust processing status or terminate accounts.</p>
+      </div>
+    </div>
+    <div class="comment">
+      The lifecycle view illustrates the end-to-end process of merchant risk management, from onboarding to potential termination. It helps analysts understand the sequence of actions and ensures no steps are overlooked, supporting compliance and risk mitigation.
+    </div>
+  </section>
+
+  <script>
+    // Project Board Visualization
+    const svg = d3.select('#projectBoard');
+    const width = 1000, height = 400, margin = { top: 40, right: 20, bottom: 60, left: 150 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const data = [
+      { task: 'KYC/AML Reviews', completed: 60, inProgress: 20, pending: 20 },
+      { task: 'FICO Changes', completed: 40, inProgress: 30, pending: 30 },
+      { task: 'Business Status', completed: 70, inProgress: 10, pending: 20 },
+      { task: 'YTD Volume', completed: 50, inProgress: 25, pending: 25 },
+      { task: 'YTD Returns', completed: 30, inProgress: 40, pending: 30 },
+      { task: 'YTD Profit', completed: 80, inProgress: 15, pending: 5 },
+      { task: 'YTD Risk Exposure', completed: 20, inProgress: 50, pending: 30 }
+    ];
+
+    const stack = d3.stack().keys(['completed', 'inProgress', 'pending']);
+    const stackedData = stack(data);
+
+    const y = d3.scaleBand().domain(data.map(d => d.task)).range([0, innerHeight]).padding(0.2);
+    const x = d3.scaleLinear().domain([0, 100]).range([0, innerWidth]);
+
+    const tooltip = d3.select('.tooltip');
+
+    g.selectAll('.bar')
+      .data(stackedData)
+      .enter()
+      .append('g')
+      .attr('class', d => d.key)
+      .attr('fill', d => {
+        if (d.key === 'completed') return '#22c55e';
+        if (d.key === 'inProgress') return '#f59e0b';
+        return '#ef4444';
+      })
+      .selectAll('rect')
+      .data(d => d.map((v, i) => ({ value: v, task: data[i].task, key: d.key })))
+      .enter()
+      .append('rect')
+      .attr('x', d => x(d.value[0]))
+      .attr('y', d => y(d.task))
+      .attr('width', d => x(d.value[1] - d.value[0]))
+      .attr('height', y.bandwidth())
+      .attr('opacity', 0)
+      .on('mouseover', function(event, d) {
+        const percentage = d.value[1] - d.value[0];
+        tooltip.style('opacity', 1)
+          .html(`${d.key}: ${percentage}%`)
+          .style('left', `${event.pageX + 10}px`)
+          .style('top', `${event.pageY - 10}px`);
+      })
+      .on('mouseout', () => tooltip.style('opacity', 0))
+      .transition()
+      .duration(1000)
+      .attr('opacity', 1);
+
+    g.append('g')
+      .call(d3.axisLeft(y))
+      .selectAll('text')
+      .style('font-size', '12px');
+
+    g.append('g')
+      .attr('transform', `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x).ticks(5).tickFormat(d => `${d}%`))
+      .selectAll('text')
+      .style('font-size', '12px');
+
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', margin.top / 2)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '16px')
+      .style('fill', '#1e3a8a')
+      .text('Merchant Review Progress');
+
+    svg.append('g')
+      .attr('transform', `translate(${margin.left / 2}, ${height / 2}) rotate(-90)`)
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#1e3a8a')
+      .text('Review Tasks');
+
+    svg.append('g')
+      .attr('transform', `translate(${margin.left + innerWidth / 2}, ${height - margin.bottom / 2})`)
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '14px')
+      .style('fill', '#1e3a8a')
+      .text('Progress (%)');
+
+    svg.append('g')
+      .selectAll('rect')
+      .data(['Completed', 'In Progress', 'Pending'])
+      .enter()
+      .append('rect')
+      .attr('x', (d, i) => width - margin.right - 150 + i * 50)
+      .attr('y', margin.top / 2 - 10)
+      .attr('width', 15)
+      .attr('height', 15)
+      .attr('fill', (d, i) => ['#22c55e', '#f59e0b', '#ef4444'][i]);
+
+    svg.append('g')
+      .selectAll('text')
+      .data(['Completed', 'In Progress', 'Pending'])
+      .enter()
+      .append('text')
+      .attr('x', (d, i) => width - margin.right - 130 + i * 50)
+      .attr('y', margin.top / 2)
+      .style('font-size', '12px')
+      .style('fill', '#333')
+      .text(d => d);
+
+    // Task Details Table
+    const merchants = [
+      { dba: 'BlueWave Retail', mcc: '5651', onboarding: '2023-01-15', task: 'KYC Review', status: 'In Progress' },
+      { dba: 'SunnyMart Grocery', mcc: '5411', onboarding: '2020-06-22', task: 'FICO Update', status: 'Completed' },
+      { dba: 'TechTrend Electronics', mcc: '5732', onboarding: '2024-03-10', task: 'Business Status', status: 'Pending' },
+      { dba: 'Glamour Boutique', mcc: '5655', onboarding: '2022-11-05', task: 'YTD Volume', status: 'In Progress' },
+      { dba: 'FitPulse Gym', mcc: '7997', onboarding: '2024-08-01', task: 'YTD Returns', status: 'Pending' }
+    ];
+
+    const tbody = d3.select('#taskTable tbody');
+    const rows = tbody.selectAll('tr').data(merchants).enter().append('tr');
+    rows.selectAll('td')
+      .data(d => [
+        d.dba,
+        d.mcc,
+        d.onboarding,
+        `<input type="checkbox" ${d.status === 'Completed' ? 'checked' : ''}> ${d.task}`,
+        d.status
+      ])
+      .enter().append('td').html(d => d);
+  </script>
+</body>
+</html>
