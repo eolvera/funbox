@@ -6,6 +6,7 @@
   <title>Risk Analyst Portfolio</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -153,22 +154,28 @@
   
   <section id="risk-management-essay">
 <a href="markdown_display.html">Risk Management</a>
-<script>
-        // Fetch the Markdown file from your repository
-        fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch Markdown file');
-                return response.text();
-            })
-            .then(data => {
-                // Render Markdown to HTML using marked.js
-                document.getElementById('content').innerHTML = marked.parse(data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('content').innerHTML = '<p>Error loading Markdown content. Please check the file path or repository settings.</p>';
-            });
-    </script>  
+<div id="content">
+  <section id="risk-management-essay">
+  <a href="markdown_display.html">Risk Management</a>
+  <div id="content"></div>
+  <script>
+    // Fetch the Markdown file from your repository
+    fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch Markdown file');
+        return response.text();
+      })
+      .then(data => {
+        // Render Markdown to HTML using marked.js
+        document.getElementById('content').innerHTML = marked.parse(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('content').innerHTML = '<p>Error loading Markdown content. Please check the file path or repository settings.</p>';
+      });
+  </script>
+</section>
+</div>
     <div class="comment">
       Visa/MC require periodic merchant risk reviews to curb fraud. AML laws mandate ongoing due diligence for compliance. CAMS study guide details schemes like trade-based laundering, bust-out fraud.
     </div>
