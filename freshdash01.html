@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EO Biz Dashboard</title>
+  <title>Eolvera Porfolio Dashboard Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -131,6 +131,7 @@
   <canvas id="topProcessingDaysChart"></canvas>
 </div>
 
+ <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
 <script>
   const topProcessingDaysCtx = document.getElementById('topProcessingDaysChart').getContext('2d');
   new Chart(topProcessingDaysCtx, {
@@ -153,6 +154,7 @@
     }
   });
 </script>
+ </div>
 <!-- Include Leaflet CSS and JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -188,7 +190,8 @@
   <h2 class="text-xl font-semibold mb-4">🔁 ACH Return Codes Distribution</h2>
   <canvas id="achReturnCodesChart"></canvas>
 </div>
-
+  
+<div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition overflow-x-auto">
 <script>
   const achReturnCodesCtx = document.getElementById('achReturnCodesChart').getContext('2d');
   new Chart(achReturnCodesCtx, {
@@ -210,6 +213,7 @@
     }
   });
 </script>
+</div>
 <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition overflow-x-auto">
   <h2 class="text-xl font-semibold mb-4">📋 MCC-Based Merchant Matrix</h2>
   <table class="min-w-full text-sm text-left text-gray-700">
