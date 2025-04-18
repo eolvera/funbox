@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eolvera Porfolio Dashboard Summary</title>
+  <title>Eolvera Portfolio Dashboard Summary</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body class="bg-gray-100 font-sans leading-relaxed tracking-wide">
-
   <header class="bg-slate-800 text-white p-6 text-center shadow-md">
-    <h1 class="text-3xl font-bold">Welcome to your Merchant Portfolio</h1>
+    <h1 class="text-3xl font-bold">Welcome to your Portfolio</h1>
     <p class="text-slate-300 mt-1">Real-time merchant metrics at your fingertips</p>
   </header>
 
   <main class="p-6 max-w-7xl mx-auto">
     <!-- Grid Layout -->
     <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-
       <!-- MTD Summary -->
       <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-        <h2 class="text-xl font-semibold mb-4">📊 MTD Summary</h2>
+        <h2 class="text-xl font-semibold mb-4">📊 M.�TD Summary</h2>
         <ul class="space-y-2 text-gray-700">
           <li><strong>Sales:</strong> $145,000</li>
           <li><strong>Credits:</strong> $12,300</li>
@@ -76,6 +76,67 @@
         <canvas id="ytdVolumeChart"></canvas>
       </div>
 
+      <!-- Top Processing Days -->
+      <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition col-span-1 md:col-span-2 lg:col-span-3">
+        <h2 class="text-xl font-semibold mb-4">📅 Top 10 Processing Days</h2>
+        <canvas id="topProcessingDaysChart"></canvas>
+      </div>
+
+      <!-- Geographical Payment Volumes -->
+      <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition col-span-1 md:col-span-2 lg:col-span-3">
+        <h2 class="text-xl font-semibold mb-4">🌍 Geographical Payment Volumes</h2>
+        <div id="geoMap" style="height: 400px;"></div>
+      </div>
+
+      <!-- ACH Return Codes Distribution -->
+      <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition col-span-1 md:col-span-2 lg:col-span-3">
+        <h2 class="text-xl font-semibold mb-4">🔁 ACH Return Codes Distribution</h2>
+        <canvas id="achReturnCodesChart"></canvas>
+      </div>
+
+      <!-- MCC-Based Merchant Matrix -->
+      <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition col-span-1 md:col-span-2 lg:col-span-3 overflow-x-auto">
+        <h2 class="text-xl font-semibold mb-4">📋 MCC-Based Merchant Matrix</h2>
+        <table class="min-w-full text-sm text-left text-gray-700">
+          <thead class="bg-gray-50 text-gray-500 uppercase tracking-wider">
+            <tr>
+              <th class="px-4 py-2">MCC</th>
+              <th class="px-4 py-2">Merchant</th>
+              <th class="px-4 py-2">Onboarding Age</th>
+              <th class="px-4 py-2">Est. Volume ($)</th>
+              <th class="px-4 py-2">Est. Profit ($)</th>
+              <th class="px-4 py-2">Risk Exposure</th>
+            </ Evergreen
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr>
+              <td class="px-4 py-2">5411</td>
+              <td class="px-4 py-2">FreshMart Groceries</td>
+              <td class="px-4 py-2">6 months</td>
+              <td class="px-4 py-2">$120,000</td>
+              <td class="px-4 py-2">$12,000</td>
+              <td class="px-4 py-2 text-green-600">Low</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">5812</td>
+              <td class="px-4 py-2">UrbanEats Diner</td>
+              <td class="px-4 py-2">1 year</td>
+              <td class="px-4 py-2">$200,000</td>
+              <td class="px-4 py-2">$25,000</td>
+              <td class="px-4 py-2 text-yellow-600">Medium</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2">5651</td>
+              <td class="px-4 py-2">BrightSky Electronics</td>
+              <td class="px-4 py-2">3 months</td>
+              <td class="px-4 py-2">$80,000</td>
+              <td class="px-4 py-2">$8,000</td>
+              <td class="px-4 py-2 text-red-600">High</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
 
@@ -125,129 +186,68 @@
         }
       }
     });
+
+    // Top Processing Days Chart
+    new Chart(document.getElementById('topProcessingDaysChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Apr 1', 'Apr 3', 'Apr 5', 'Apr 7', 'Apr 10', 'Apr 12', 'Apr 14', 'Apr 16', 'Apr 18', 'Apr 20'],
+        datasets: [{
+          label: 'Processing Volume ($)',
+          data: [12000, 15000, 13000, 18000, 17000, 20000, 19000, 22000, 21000, 25000],
+          backgroundColor: '#3b82f6',
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // ACH Return Codes Chart
+    new Chart(document.getElementById('achReturnCodesChart'), {
+      type: 'pie',
+      data: {
+        labels: ['R01 - Insufficient Funds', 'R03 - No Account/Unable to Locate', 'R04 - Invalid Account Number'],
+        datasets: [{
+          data: [45, 30, 25],
+          backgroundColor: ['#f87171', '#fbbf24', '#34d399'],
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+
+    // Geographical Payment Volumes Map
+    const map = L.map('geoMap').setView([37.7749, -122.4194], 4); // Centered on USA
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const regions = [
+      { location: [34.0522, -118.2437], volume: 50000, name: 'Los Angeles' },
+      { location: [40.7128, -74.0060], volume: 75000, name: 'New York' },
+      { location: [41.8781, -87.6298], volume: 60000, name: 'Chicago' },
+    ];
+
+    regions.forEach(region => {
+      L.circle(region.location, {
+        color: 'blue',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.5,
+        radius: region.volume
+      }).addTo(map).bindPopup(`${region.name}: $${region.volume.toLocaleString()}`);
+    });
   </script>
-  <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-  <h2 class="text-xl font-semibold mb-4">📅 Top 10 Processing Days</h2>
-  <canvas id="topProcessingDaysChart"></canvas>
-</div>
-
- <div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-<script>
-  const topProcessingDaysCtx = document.getElementById('topProcessingDaysChart').getContext('2d');
-  new Chart(topProcessingDaysCtx, {
-    type: 'bar',
-    data: {
-      labels: ['Apr 1', 'Apr 3', 'Apr 5', 'Apr 7', 'Apr 10', 'Apr 12', 'Apr 14', 'Apr 16', 'Apr 18', 'Apr 20'],
-      datasets: [{
-        label: 'Processing Volume ($)',
-        data: [12000, 15000, 13000, 18000, 17000, 20000, 19000, 22000, 21000, 25000],
-        backgroundColor: '#3b82f6',
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-</script>
- </div>
-<!-- Include Leaflet CSS and JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-  <h2 class="text-xl font-semibold mb-4">🌍 Geographical Payment Volumes</h2>
-  <div id="geoMap" style="height: 400px;"></div>
-</div>
-
-<script>
-  const map = L.map('geoMap').setView([37.7749, -122.4194], 4); // Centered on USA
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-
-  // Sample data points
-  const regions = [
-    { location: [34.0522, -118.2437], volume: 50000, name: 'Los Angeles' },
-    { location: [40.7128, -74.0060], volume: 75000, name: 'New York' },
-    { location: [41.8781, -87.6298], volume: 60000, name: 'Chicago' },
-  ];
-
-  regions.forEach(region => {
-    L.circle(region.location, {
-      color: 'blue',
-      fillColor: '#3b82f6',
-      fillOpacity: 0.5,
-      radius: region.volume
-    }).addTo(map).bindPopup(`${region.name}: $${region.volume.toLocaleString()}`);
-  });
-</script>
-<div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
-  <h2 class="text-xl font-semibold mb-4">🔁 ACH Return Codes Distribution</h2>
-  <canvas id="achReturnCodesChart"></canvas>
-</div>
-  
-<div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition overflow-x-auto">
-<script>
-  const achReturnCodesCtx = document.getElementById('achReturnCodesChart').getContext('2d');
-  new Chart(achReturnCodesCtx, {
-    type: 'pie',
-    data: {
-      labels: ['R01 - Insufficient Funds', 'R03 - No Account/Unable to Locate', 'R04 - Invalid Account Number'],
-      datasets: [{
-        data: [45, 30, 25],
-        backgroundColor: ['#f87171', '#fbbf24', '#34d399'],
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }
-  });
-</script>
-</div>
-<div class="bg-white p-5 rounded-xl shadow hover:shadow-lg transition overflow-x-auto">
-  <h2 class="text-xl font-semibold mb-4">📋 MCC-Based Merchant Matrix</h2>
-  <table class="min-w-full text-sm text-left text-gray-700">
-    <thead class="bg-gray-50 text-gray-500 uppercase tracking-wider">
-      <tr>
-        <th class="px-4 py-2">MCC</th>
-        <th class="px-4 py-2">Merchant</th>
-        <th class="px-4 py-2">Onboarding Age</th>
-        <th class="px-4 py-2">Est. Volume ($)</th>
-        <th class="px-4 py-2">Est. Profit ($)</th>
-        <th class="px-4 py-2">Risk Exposure</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <tr>
-        <td class="px-4 py-2">5411</td>
-        <td class="px-4 py-2">FreshMart Groceries</td>
-        <td class="px-4 py-2">6 months</td>
-        <td class="px-4 py-2">$120,000</td>
-        <td class="px-4 py-2">$12,000</td>
-        <td class="px-4 py-2 text-green-600">Low</td>
-      </tr>
-      <tr>
-        <td class="px-4 py-2">5812</td>
-        <td class="px-4 py-2">UrbanEats Diner</td>
-        <td class="px-4 py-2">1 year</td>
-        <td class="px-4 py-2">$200,000</td>
-        <td class="px-4 py-2">$25,000</td>
-        <td class="px-4 py-2 text-yellow-600">Medium</td>
-      </tr>
-      <tr>
-        <td class="px-4 py
-::contentReference[oaicite:10]{index=10}
- 
-
 </body>
 </html>
