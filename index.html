@@ -7,8 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
@@ -87,6 +87,9 @@
     tr:nth-child(even) {
       background-color: #f9fafb;
     }
+    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(6), td:nth-child(7), td:nth-child(8) {
+      text-align: right;
+    }
     .progress-bar {
       background-color: #e5e7eb;
       border-radius: 4px;
@@ -101,35 +104,46 @@
     .completed { background-color: #22c55e; }
     .in-progress { background-color: #f59e0b; }
     .pending { background-color: #ef4444; }
-  .linkedin-container {
-    text-align: center;
-  }
-  .linkedin-image {
-    width: 200px;
-    height: 200px;
-  }
+    .linkedin-container {
+      text-align: center;
+      margin-top: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .linkedin-image {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      display: block;
+    }
+    [data-popover] {
+      position: relative;
+    }
+    .legend-text {
+      font-size: 12px;
+      fill: #333;
+    }
   </style>
-  
 </head>
 <body>
   <header>
     <h1>My Sample Risk Analyst Portfolio</h1>
     <p>Showcasing Data-Driven Insights for Merchant Risk Management</p>
-        <div class="linkedin-container"><a href="https://www.linkedin.com/in/eddiejolvera/" target="_blank">
-  <img src="https://media.licdn.com/dms/image/v2/D5635AQG2STn3yAlVng/profile-framedphoto-shrink_400_400/B56ZY3HQINGcAg-/0/1744681370600?e=1745575200&v=beta&t=MPGLY5MUoQxk_W2wgsMjQ4CKXFHPNYdOUz2qKHVbOO4" alt="LinkedIn Profile">
-</a></div>
-    <!---Popover--->
-<button data-popover-target="popover-default" type="button" a href="https://www.linkedin.com/in/eddiejolvera/" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-white-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-white-800">Authored by Edward Olvera 2025</button>
-
-<div data-popover id="popover-default" role="tooltip" class="absolute z-10 invisible inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800">
-    <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
+    <div class="linkedin-container">
+      <a href="https://www.linkedin.com/in/eddiejolvera/" target="_blank">
+        <img src="https://media.licdn.com/dms/image/v2/D5635AQG2STn3yAlVng/profile-framedphoto-shrink_400_400/B56ZY3HQINGcAg-/0/1744681370600?e=1745575200&v=beta&t=MPGLY5MUoQxk_W2wgsMjQ4CKXFHPNYdOUz2qKHVbOO4" alt="Edward Olvera's LinkedIn Profile" class="linkedin-image">
+      </a>
+    </div>
+    <button data-popover-target="popover-default" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Authored by Edward Olvera 2025</button>
+    <div data-popover id="popover-default" role="tooltip" class="absolute z-10 invisible inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800">
+      <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
         <h3 class="font-semibold text-gray-900 dark:text-white">Authored by Edward Olvera 2025</h3>
+      </div>
+      <div class="px-3 py-2">
+        <p>Explore my risk analysis portfolio showcasing data-driven insights.</p>
+      </div>
+      <div data-popper-arrow></div>
     </div>
-    <div class="px-3 py-2">
-        <p>And here's some amazing content. It's very engaging. Right?</p>
-    </div>
-    <div data-popper-arrow></div>
-</div>
   </header>
   <nav>
     <a href="#portfolio">Portfolio Summary</a>
@@ -148,7 +162,7 @@
 
   <section id="project-board">
     <a href="merchant.periodic.review.project.board.html"><h2>Merchant Periodic Review Project Board</h2></a>
-    <svg id="projectBoard" width="1000" height="500"></svg>
+    <svg id="projectBoard" width="1000" height="400"></svg>
     <div class="comment">
       The project board visualizes merchant review progress across multiple metrics (KYC/AML, FICO, etc.) using a Gantt-like chart. In practice, it helps risk teams prioritize tasks, track compliance deadlines, and allocate resources efficiently by highlighting overdue or upcoming reviews.
     </div>
@@ -176,50 +190,29 @@
       The risk scoring model provides a standardized way to flag high-risk merchants for closer scrutiny. In real-world applications, it supports automated monitoring, prioritizes KYC/AML reviews, and informs decisions on transaction limits or account freezes based on dynamic risk profiles.
     </div>
   </section>
-  
+
   <section id="risk-management-essay">
-<div id="content">
-  <a href="markdown_display.html">Compliance Intelligence</a>
-  <div id="content"></div>
-  <script>
-    // Fetch the Markdown file from your repository
-    fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch Markdown file');
-        return response.text();
-      })
-      .then(data => {
-        // Render Markdown to HTML using marked.js
-        document.getElementById('content').innerHTML = marked.parse(data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('content').innerHTML = '<p>Error loading Markdown content. Please check the file path or repository settings.</p>';
-      });
-  </script>
-</section>
-</div>
+    <h2><a href="markdown_display.html">Compliance Intelligence</a></h2>
+    <div id="markdown-content"></div>
     <div class="comment">
       Visa/MC require periodic merchant risk reviews to curb fraud. AML laws mandate ongoing due diligence for compliance. CAMS study guide details schemes like trade-based laundering, bust-out fraud.
     </div>
-      <a href="https://www.linkedin.com/in/eddiejolvera/" target="_blank">
-  <img src="https://media.licdn.com/dms/image/v2/D5635AQG2STn3yAlVng/profile-framedphoto-shrink_400_400/B56ZY3HQINGcAg-/0/1744681370600?e=1745575200&v=beta&t=MPGLY5MUoQxk_W2wgsMjQ4CKXFHPNYdOUz2qKHVbOO4" alt="LinkedIn Profile" style="width: 200px; height: 200px;">
-</a>
-    <!---Popover--->
-<button data-popover-target="popover-default" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Authored by Edward Olvera 2025</button>
-
-<div data-popover id="popover-default" role="tooltip" class="absolute z-10 invisible inline-block w-64 text-sm text-gray-500 transition-opacity duration-300 bg-white border border-gray-200 rounded-lg shadow-xs opacity-0 dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800">
-    <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
-        <h3 class="font-semibold text-gray-900 dark:text-white">Authored by Edward Olvera 2025</h3>
-    </div>
-    <div class="px-3 py-2">
-        <p>And here's some amazing content. It's very engaging. Right?</p>
-    </div>
-    <div data-popper-arrow></div>
-</div>
   </section>
-  
-  <script>
+
+  <script defer>
+    // Popover Initialization
+    const button = document.querySelector('[data-popover-target="popover-default"]');
+    const popover = document.querySelector('#popover-default');
+    const popperInstance = Popper.createPopper(button, popover, {
+      placement: 'bottom',
+      modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
+    });
+    button.addEventListener('click', () => {
+      popover.classList.toggle('invisible');
+      popover.classList.toggle('opacity-0');
+      popperInstance.update();
+    });
+
     // Portfolio Summary Chart
     const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
     new Chart(portfolioCtx, {
@@ -251,7 +244,27 @@
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+    // Set SVG viewBox
+    svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+    // Create clipping path for bars
+    svg.append('defs')
+      .append('clipPath')
+      .attr('id', 'chart-area')
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('width', innerWidth)
+      .attr('height', innerHeight);
+
+    // Main group for transformation
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Group for bars with clipping
+    const barGroup = g.append('g')
+      .attr('clip-path', 'url(#chart-area)');
+
     const data = [
       { task: 'KYC/AML Reviews', completed: 60, inProgress: 20, pending: 20 },
       { task: 'FICO Changes', completed: 40, inProgress: 30, pending: 30 },
@@ -265,30 +278,70 @@
     const y = d3.scaleBand().domain(data.map(d => d.task)).range([0, innerHeight]).padding(0.1);
     const x = d3.scaleLinear().domain([0, 100]).range([0, innerWidth]);
 
-    g.selectAll('.bar').data(data).enter().append('g')
+    barGroup.selectAll('.bar').data(data).enter().append('g')
       .attr('transform', d => `translate(0,${y(d.task)})`)
       .each(function(d) {
         d3.select(this).append('rect')
           .attr('class', 'progress completed')
+          .attr('x', 0)
           .attr('width', x(d.completed))
           .attr('height', y.bandwidth() / 3)
           .attr('fill', '#22c55e');
         d3.select(this).append('rect')
           .attr('class', 'progress in-progress')
+          .attr('x', x(d.completed))
           .attr('width', x(d.inProgress))
           .attr('height', y.bandwidth() / 3)
           .attr('y', y.bandwidth() / 3)
           .attr('fill', '#f59e0b');
         d3.select(this).append('rect')
           .attr('class', 'progress pending')
+          .attr('x', x(d.completed + d.inProgress))
           .attr('width', x(d.pending))
           .attr('height', y.bandwidth() / 3)
           .attr('y', (2 * y.bandwidth()) / 3)
           .attr('fill', '#ef4444');
       });
 
-    g.append('g').call(d3.axisLeft(y));
-    g.append('g').attr('transform', `translate(0,${innerHeight})`).call(d3.axisBottom(x));
+    // Axes (outside clipped group)
+    g.append('g')
+      .call(d3.axisLeft(y))
+      .selectAll('text')
+      .style('font-size', '12px')
+      .style('fill', '#333');
+    g.append('g')
+      .attr('transform', `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .style('font-size', '12px')
+      .style('fill', '#333');
+
+    // Legend
+    const legendData = [
+      { label: 'Completed', color: '#22c55e' },
+      { label: 'In Progress', color: '#f59e0b' },
+      { label: 'Pending', color: '#ef4444' }
+    ];
+    const legend = g.append('g')
+      .attr('transform', `translate(${innerWidth - 100}, 10)`);
+    legend.selectAll('.legend-item')
+      .data(legendData)
+      .enter().append('g')
+      .attr('class', 'legend-item')
+      .attr('transform', (d, i) => `translate(0, ${i * 20})`)
+      .each(function(d) {
+        d3.select(this).append('rect')
+          .attr('x', 0)
+          .attr('y', 0)
+          .attr('width', 15)
+          .attr('height', 15)
+          .attr('fill', d.color);
+        d3.select(this).append('text')
+          .attr('x', 20)
+          .attr('y', 12)
+          .attr('class', 'legend-text')
+          .text(d.label);
+      });
 
     // Risk Scoring Model
     const merchants = [
@@ -343,7 +396,20 @@
         d.riskScore
       ])
       .enter().append('td').text(d => d);
-  </script>
 
+    // Markdown Content
+    fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch Markdown file');
+        return response.text();
+      })
+      .then(data => {
+        document.getElementById('markdown-content').innerHTML = marked.parse(data);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('markdown-content').innerHTML = '<p>Error loading Compliance Intelligence content. Please try again later.</p>';
+      });
+  </script>
 </body>
 </html>
