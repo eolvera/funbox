@@ -56,6 +56,19 @@
       color: #1e3a8a;
       border-bottom: 2px solid #3b82f6;
       padding-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .view-more {
+      font-size: 0.9rem;
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: normal;
+    }
+    .view-more:hover {
+      color: #1e3a8a;
+      text-decoration: underline;
     }
     canvas, svg {
       max-width: 100%;
@@ -123,6 +136,10 @@
       font-size: 12px;
       fill: #333;
     }
+    .grid-line {
+      stroke: #e5e7eb;
+      stroke-opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -153,7 +170,10 @@
   </nav>
 
   <section id="portfolio">
-    <a href="freshdash01.html"><h2>Portfolio Risk Summary</h2></a>
+    <h2>
+      Portfolio Risk Summary
+      <a href="freshdash01.html" class="view-more">View More</a>
+    </h2>
     <canvas id="portfolioChart"></canvas>
     <div class="comment">
       This visualization aggregates MTD portfolio metrics (Sales, Credits, Chargebacks, Deposits, Returns) to provide a high-level view of portfolio health. In real-world scenarios, it helps identify anomalies (e.g., high chargeback spikes) for immediate investigation, enabling proactive risk mitigation.
@@ -161,15 +181,21 @@
   </section>
 
   <section id="project-board">
-    <a href="merchant.periodic.review.project.board.html"><h2>Merchant Periodic Review Project Board</h2></a>
-    <svg id="projectBoard" width="1000" height="400"></svg>
+    <h2>
+      Merchant Periodic Review Project Board
+      <a href="merchant.periodic.review.project.board.html" class="view-more">View More</a>
+    </h2>
+    <svg id="projectBoard" width="1050" height="400"></svg>
     <div class="comment">
       The project board visualizes merchant review progress across multiple metrics (KYC/AML, FICO, etc.) using a Gantt-like chart. In practice, it helps risk teams prioritize tasks, track compliance deadlines, and allocate resources efficiently by highlighting overdue or upcoming reviews.
     </div>
   </section>
 
   <section id="risk-score">
-    <h2>Risk Scoring Model</h2>
+    <h2>
+      Risk Scoring Model
+      <a href="#" class="view-more">View More</a>
+    </h2>
     <p>A new scoring model calculates merchant risk based on five factors: flagged history, CNP/NP transaction percentage, settlement speed, chargeback ratio, and credit/refund ratio. Scores range from 0-100, with weights adjusted by merchant age.</p>
     <table id="riskMatrix">
       <thead>
@@ -192,7 +218,10 @@
   </section>
 
   <section id="risk-management-essay">
-    <h2><a href="markdown_display.html">Compliance Intelligence</a></h2>
+    <h2>
+      Compliance Intelligence
+      <a href="markdown_display.html" class="view-more">View More</a>
+    </h2>
     <div id="markdown-content"></div>
     <div class="comment">
       Visa/MC require periodic merchant risk reviews to curb fraud. AML laws mandate ongoing due diligence for compliance. CAMS study guide details schemes like trade-based laundering, bust-out fraud.
@@ -200,216 +229,246 @@
   </section>
 
   <script defer>
-    // Popover Initialization
-    const button = document.querySelector('[data-popover-target="popover-default"]');
-    const popover = document.querySelector('#popover-default');
-    const popperInstance = Popper.createPopper(button, popover, {
-      placement: 'bottom',
-      modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
-    });
-    button.addEventListener('click', () => {
-      popover.classList.toggle('invisible');
-      popover.classList.toggle('opacity-0');
-      popperInstance.update();
-    });
+    // Error handling wrapper
+    try {
+      // Popover Initialization
+      const button = document.querySelector('[data-popover-target="popover-default"]');
+      const popover = document.querySelector('#popover-default');
+      const popperInstance = Popper.createPopper(button, popover, {
+        placement: 'bottom',
+        modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
+      });
+      button.addEventListener('click', () => {
+        popover.classList.toggle('invisible');
+        popover.classList.toggle('opacity-0');
+        popperInstance.update();
+      });
 
-    // Portfolio Summary Chart
-    const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
-    new Chart(portfolioCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Sales', 'Credits', 'Chargebacks', 'Deposits', 'Returns'],
-        datasets: [{
-          label: 'MTD Volume ($M)',
-          data: [12.5, 3.2, 0.8, 10.1, 1.4],
-          backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#10b981', '#f59e0b'],
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'MTD Portfolio Summary' }
+      // Portfolio Summary Chart
+      const portfolioCtx = document.getElementById('portfolioChart').getContext('2d');
+      new Chart(portfolioCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Sales', 'Credits', 'Chargebacks', 'Deposits', 'Returns'],
+          datasets: [{
+            label: 'MTD Volume ($M)',
+            data: [12.5, 3.2, 0.8, 10.1, 1.4],
+            backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#10b981', '#f59e0b'],
+            borderRadius: 4
+          }]
         },
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: 'Volume ($M)' } }
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'MTD Portfolio Summary' }
+          },
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Volume ($M)' } }
+          }
         }
-      }
-    });
-
-    // Project Board Visualization
-    const svg = d3.select('#projectBoard');
-    const width = 1000, height = 400, margin = { top: 20, right: 20, bottom: 30, left: 150 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
-    // Set SVG viewBox
-    svg.attr('viewBox', `0 0 ${width} ${height}`);
-
-    // Create clipping path for bars
-    svg.append('defs')
-      .append('clipPath')
-      .attr('id', 'chart-area')
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', innerWidth)
-      .attr('height', innerHeight);
-
-    // Main group for transformation
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    // Group for bars with clipping
-    const barGroup = g.append('g')
-      .attr('clip-path', 'url(#chart-area)');
-
-    const data = [
-      { task: 'KYC/AML Reviews', completed: 60, inProgress: 20, pending: 20 },
-      { task: 'FICO Changes', completed: 40, inProgress: 30, pending: 30 },
-      { task: 'Business Status', completed: 70, inProgress: 10, pending: 20 },
-      { task: 'YTD Volume', completed: 50, inProgress: 25, pending: 25 },
-      { task: 'YTD Returns', completed: 30, inProgress: 40, pending: 30 },
-      { task: 'YTD Profit', completed: 80, inProgress: 15, pending: 5 },
-      { task: 'YTD Risk Exposure', completed: 20, inProgress: 50, pending: 30 }
-    ];
-
-    const y = d3.scaleBand().domain(data.map(d => d.task)).range([0, innerHeight]).padding(0.1);
-    const x = d3.scaleLinear().domain([0, 100]).range([0, innerWidth]);
-
-    barGroup.selectAll('.bar').data(data).enter().append('g')
-      .attr('transform', d => `translate(0,${y(d.task)})`)
-      .each(function(d) {
-        d3.select(this).append('rect')
-          .attr('class', 'progress completed')
-          .attr('x', 0)
-          .attr('width', x(d.completed))
-          .attr('height', y.bandwidth() / 3)
-          .attr('fill', '#22c55e');
-        d3.select(this).append('rect')
-          .attr('class', 'progress in-progress')
-          .attr('x', x(d.completed))
-          .attr('width', x(d.inProgress))
-          .attr('height', y.bandwidth() / 3)
-          .attr('y', y.bandwidth() / 3)
-          .attr('fill', '#f59e0b');
-        d3.select(this).append('rect')
-          .attr('class', 'progress pending')
-          .attr('x', x(d.completed + d.inProgress))
-          .attr('width', x(d.pending))
-          .attr('height', y.bandwidth() / 3)
-          .attr('y', (2 * y.bandwidth()) / 3)
-          .attr('fill', '#ef4444');
       });
 
-    // Axes (outside clipped group)
-    g.append('g')
-      .call(d3.axisLeft(y))
-      .selectAll('text')
-      .style('font-size', '12px')
-      .style('fill', '#333');
-    g.append('g')
-      .attr('transform', `translate(0,${innerHeight})`)
-      .call(d3.axisBottom(x))
-      .selectAll('text')
-      .style('font-size', '12px')
-      .style('fill', '#333');
+      // Project Board Visualization
+      const svg = d3.select('#projectBoard');
+      const width = 1050, height = 400, margin = { top: 20, right: 80, bottom: 30, left: 150 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
 
-    // Legend
-    const legendData = [
-      { label: 'Completed', color: '#22c55e' },
-      { label: 'In Progress', color: '#f59e0b' },
-      { label: 'Pending', color: '#ef4444' }
-    ];
-    const legend = g.append('g')
-      .attr('transform', `translate(${innerWidth - 100}, 10)`);
-    legend.selectAll('.legend-item')
-      .data(legendData)
-      .enter().append('g')
-      .attr('class', 'legend-item')
-      .attr('transform', (d, i) => `translate(0, ${i * 20})`)
-      .each(function(d) {
-        d3.select(this).append('rect')
-          .attr('x', 0)
-          .attr('y', 0)
-          .attr('width', 15)
-          .attr('height', 15)
-          .attr('fill', d.color);
-        d3.select(this).append('text')
-          .attr('x', 20)
-          .attr('y', 12)
-          .attr('class', 'legend-text')
-          .text(d.label);
+      // Set SVG viewBox
+      svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+      // Create clipping path for bars
+      svg.append('defs')
+        .append('clipPath')
+        .attr('id', 'chart-area')
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', innerWidth)
+        .attr('height', innerHeight);
+
+      // Main group for transformation
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      // Group for bars with clipping
+      const barGroup = g.append('g')
+        .attr('clip-path', 'url(#chart-area)');
+
+      const data = [
+        { task: 'KYC/AML Reviews', completed: 60, inProgress: 20, pending: 20 },
+        { task: 'FICO Changes', completed: 40, inProgress: 30, pending: 30 },
+        { task: 'Business Status', completed: 70, inProgress: 10, pending: 20 },
+        { task: 'YTD Volume', completed: 50, inProgress: 25, pending: 25 },
+        { task: 'YTD Returns', completed: 30, inProgress: 40, pending: 30 },
+        { task: 'YTD Profit', completed: 80, inProgress: 15, pending: 5 },
+        { task: 'YTD Risk Exposure', completed: 20, inProgress: 50, pending: 30 }
+      ];
+
+      const y = d3.scaleBand().domain(data.map(d => d.task)).range([0, innerHeight]).padding(0.1);
+      const x = d3.scaleLinear().domain([0, 100]).range([0, innerWidth]);
+
+      // Horizontal grid lines (aligned with y-axis ticks)
+      g.append('g')
+        .attr('class', 'grid')
+        .selectAll('line')
+        .data(y.domain())
+        .enter().append('line')
+        .attr('class', 'grid-line')
+        .attr('x1', 0)
+        .attr('x2', innerWidth)
+        .attr('y1', d => y(d) + y.bandwidth() / 2)
+        .attr('y2', d => y(d) + y.bandwidth() / 2);
+
+      // Vertical grid lines (aligned with x-axis ticks)
+      g.append('g')
+        .attr('class', 'grid')
+        .selectAll('line')
+        .data(x.ticks(10))
+        .enter().append('line')
+        .attr('class', 'grid-line')
+        .attr('x1', d => x(d))
+        .attr('x2', d => x(d))
+        .attr('y1', 0)
+        .attr('y2', innerHeight);
+
+      barGroup.selectAll('.bar').data(data).enter().append('g')
+        .attr('transform', d => `translate(0,${y(d.task)})`)
+        .each(function(d) {
+          d3.select(this).append('rect')
+            .attr('class', 'progress completed')
+            .attr('x', 0)
+            .attr('width', x(d.completed))
+            .attr('height', Math.floor(y.bandwidth() / 3) - 1)
+            .attr('y', 0)
+            .attr('fill', '#22c55e');
+          d3.select(this).append('rect')
+            .attr('class', 'progress in-progress')
+            .attr('x', x(d.completed))
+            .attr('width', x(d.inProgress))
+            .attr('height', Math.floor(y.bandwidth() / 3) - 1)
+            .attr('y', Math.floor(y.bandwidth() / 3))
+            .attr('fill', '#f59e0b');
+          d3.select(this).append('rect')
+            .attr('class', 'progress pending')
+            .attr('x', x(d.completed + d.inProgress))
+            .attr('width', x(d.pending))
+            .attr('height', Math.floor(y.bandwidth() / 3) - 1)
+            .attr('y', Math.floor(2 * y.bandwidth() / 3))
+            .attr('fill', '#ef4444');
+        });
+
+      // Axes
+      g.append('g')
+        .call(d3.axisLeft(y))
+        .selectAll('text')
+        .style('font-size', '12px')
+        .style('fill', '#333');
+      g.append('g')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(x))
+        .selectAll('text')
+        .style('font-size', '12px')
+        .style('fill', '#333');
+
+      // Legend
+      const legendData = [
+        { label: 'Completed', color: '#22c55e' },
+        { label: 'In Progress', color: '#f59e0b' },
+        { label: 'Pending', color: '#ef4444' }
+      ];
+      const legend = g.append('g')
+        .attr('transform', `translate(${innerWidth}, 10)`);
+      legend.selectAll('.legend-item')
+        .data(legendData)
+        .enter().append('g')
+        .attr('class', 'legend-item')
+        .attr('transform', (d, i) => `translate(0, ${i * 20})`)
+        .each(function(d) {
+          d3.select(this).append('rect')
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('width', 15)
+            .attr('height', 15)
+            .attr('fill', d.color);
+          d3.select(this).append('text')
+            .attr('x', 20)
+            .attr('y', 12)
+            .attr('class', 'legend-text')
+            .text(d.label);
+        });
+
+      // Risk Scoring Model
+      const merchants = [
+        { name: 'BlueWave Retail', industry: 'E-commerce', age: 3, flagged: 1, cnp: 45.2, settlement: '2 Days', chargeback: 2.1, refund: 7.3 },
+        { name: 'SunnyMart Grocery', industry: 'Retail', age: 5, flagged: 0, cnp: 10.5, settlement: 'Next Day', chargeback: 0.8, refund: 3.2 },
+        { name: 'TechTrend Electronics', industry: 'Electronics', age: 2, flagged: 2, cnp: 38.7, settlement: '3+ Days', chargeback: 4.2, refund: 9.1 },
+        { name: 'Glamour Boutique', industry: 'Fashion', age: 4, flagged: 1, cnp: 25.3, settlement: '2 Days', chargeback: 1.5, refund: 5.6 },
+        { name: 'FitPulse Gym', industry: 'Fitness', age: 1, flagged: 3, cnp: 48.1, settlement: '3+ Days', chargeback: 3.9, refund: 8.4 },
+        { name: 'QuickBite Delivery', industry: 'Food Delivery', age: 2, flagged: 0, cnp: 15.8, settlement: 'Next Day', chargeback: 1.2, refund: 4.1 },
+        { name: 'EcoTravel Agency', industry: 'Travel', age: 3, flagged: 2, cnp: 42.6, settlement: '2 Days', chargeback: 2.8, refund: 6.9 },
+        { name: 'Crafty Corner', industry: 'Handmade Goods', age: 5, flagged: 0, cnp: 12.4, settlement: 'Next Day', chargeback: 0.5, refund: 2.8 },
+        { name: 'StarLight Cinema', industry: 'Entertainment', age: 4, flagged: 1, cnp: 30.1, settlement: '2 Days', chargeback: 1.9, refund: 5.2 },
+        { name: 'PetPaws Store', industry: 'Pet Supplies', age: 2, flagged: 2, cnp: 39.5, settlement: '3+ Days', chargeback: 3.3, refund: 7.8 },
+        { name: 'GreenLeaf Nursery', industry: 'Gardening', age: 3, flagged: 0, cnp: 18.7, settlement: 'Next Day', chargeback: 1.0, refund: 3.9 },
+        { name: 'UrbanRide Bikes', industry: 'Sporting Goods', age: 1, flagged: 3, cnp: 47.2, settlement: '3+ Days', chargeback: 4.0, refund: 8.7 },
+        { name: 'CozyNest Furniture', industry: 'Home Decor', age: 4, flagged: 1, cnp: 22.9, settlement: '2 Days', chargeback: 1.7, refund: 4.8 },
+        { name: 'TechBit Software', industry: 'SaaS', age: 2, flagged: 2, cnp: 41.3, settlement: '2 Days', chargeback: 2.5, refund: 6.5 },
+        { name: 'FreshBrew Cafe', industry: 'Hospitality', age: 5, flagged: 0, cnp: 9.8, settlement: 'Next Day', chargeback: 0.7, refund: 3.0 },
+        { name: 'SkyHigh Airlines', industry: 'Travel', age: 3, flagged: 2, cnp: 44.8, settlement: '3+ Days', chargeback: 3.1, refund: 7.6 },
+        { name: 'BrightBooks Store', industry: 'Books', age: 4, flagged: 1, cnp: 27.6, settlement: '2 Days', chargeback: 1.4, refund: 5.0 },
+        { name: 'FitGear Apparel', industry: 'Fashion', age: 2, flagged: 2, cnp: 36.4, settlement: '3+ Days', chargeback: 3.6, refund: 8.2 },
+        { name: 'PureWater Filters', industry: 'Home Goods', age: 1, flagged: 3, cnp: 49.0, settlement: '3+ Days', chargeback: 4.5, refund: 9.0 },
+        { name: 'CityTours Agency', industry: 'Travel', age: 3, flagged: 1, cnp: 20.5, settlement: 'Next Day', chargeback: 1.3, refund: 4.3 },
+        { name: 'PixelArt Studio', industry: 'Digital Services', age: 2, flagged: 2, cnp: 40.2, settlement: '2 Days', chargeback: 2.9, refund: 6.7 },
+        { name: 'TastyTreats Bakery', industry: 'Food', age: 5, flagged: 0, cnp: 11.2, settlement: 'Next Day', chargeback: 0.6, refund: 2.9 },
+        { name: 'GlowSpa Salon', industry: 'Beauty', age: 4, flagged: 1, cnp: 29.3, settlement: '2 Days', chargeback: 1.8, refund: 5.4 },
+        { name: 'Adventure Gear', industry: 'Outdoor', age: 2, flagged: 2, cnp: 37.8, settlement: '3+ Days', chargeback: 3.4, refund: 7.9 },
+        { name: 'SmartTech Gadgets', industry: 'Electronics', age: 3, flagged: 1, cnp: 23.4, settlement: '2 Days', chargeback: 1.6, refund: 4.7 }
+      ];
+
+      merchants.forEach(m => {
+        const flagScore = m.flagged * 20;
+        const cnpScore = (m.cnp / 50) * 20;
+        const settlementScore = m.settlement === 'Next Day' ? 5 : m.settlement === '2 Days' ? 15 : 25;
+        const chargebackScore = (m.chargeback / 5) * 25;
+        const refundScore = (m.refund / 10) * 15;
+        const ageWeight = m.age <= 2 ? 1.2 : m.age <= 4 ? 1.0 : 0.8;
+        m.riskScore = Math.min(100, Math.round((flagScore + cnpScore + settlementScore + chargebackScore + refundScore) * ageWeight));
       });
 
-    // Risk Scoring Model
-    const merchants = [
-      { name: 'BlueWave Retail', industry: 'E-commerce', age: 3, flagged: 1, cnp: 45.2, settlement: '2 Days', chargeback: 2.1, refund: 7.3 },
-      { name: 'SunnyMart Grocery', industry: 'Retail', age: 5, flagged: 0, cnp: 10.5, settlement: 'Next Day', chargeback: 0.8, refund: 3.2 },
-      { name: 'TechTrend Electronics', industry: 'Electronics', age: 2, flagged: 2, cnp: 38.7, settlement: '3+ Days', chargeback: 4.2, refund: 9.1 },
-      { name: 'Glamour Boutique', industry: 'Fashion', age: 4, flagged: 1, cnp: 25.3, settlement: '2 Days', chargeback: 1.5, refund: 5.6 },
-      { name: 'FitPulse Gym', industry: 'Fitness', age: 1, flagged: 3, cnp: 48.1, settlement: '3+ Days', chargeback: 3.9, refund: 8.4 },
-      { name: 'QuickBite Delivery', industry: 'Food Delivery', age: 2, flagged: 0, cnp: 15.8, settlement: 'Next Day', chargeback: 1.2, refund: 4.1 },
-      { name: 'EcoTravel Agency', industry: 'Travel', age: 3, flagged: 2, cnp: 42.6, settlement: '2 Days', chargeback: 2.8, refund: 6.9 },
-      { name: 'Crafty Corner', industry: 'Handmade Goods', age: 5, flagged: 0, cnp: 12.4, settlement: 'Next Day', chargeback: 0.5, refund: 2.8 },
-      { name: 'StarLight Cinema', industry: 'Entertainment', age: 4, flagged: 1, cnp: 30.1, settlement: '2 Days', chargeback: 1.9, refund: 5.2 },
-      { name: 'PetPaws Store', industry: 'Pet Supplies', age: 2, flagged: 2, cnp: 39.5, settlement: '3+ Days', chargeback: 3.3, refund: 7.8 },
-      { name: 'GreenLeaf Nursery', industry: 'Gardening', age: 3, flagged: 0, cnp: 18.7, settlement: 'Next Day', chargeback: 1.0, refund: 3.9 },
-      { name: 'UrbanRide Bikes', industry: 'Sporting Goods', age: 1, flagged: 3, cnp: 47.2, settlement: '3+ Days', chargeback: 4.0, refund: 8.7 },
-      { name: 'CozyNest Furniture', industry: 'Home Decor', age: 4, flagged: 1, cnp: 22.9, settlement: '2 Days', chargeback: 1.7, refund: 4.8 },
-      { name: 'TechBit Software', industry: 'SaaS', age: 2, flagged: 2, cnp: 41.3, settlement: '2 Days', chargeback: 2.5, refund: 6.5 },
-      { name: 'FreshBrew Cafe', industry: 'Hospitality', age: 5, flagged: 0, cnp: 9.8, settlement: 'Next Day', chargeback: 0.7, refund: 3.0 },
-      { name: 'SkyHigh Airlines', industry: 'Travel', age: 3, flagged: 2, cnp: 44.8, settlement: '3+ Days', chargeback: 3.1, refund: 7.6 },
-      { name: 'BrightBooks Store', industry: 'Books', age: 4, flagged: 1, cnp: 27.6, settlement: '2 Days', chargeback: 1.4, refund: 5.0 },
-      { name: 'FitGear Apparel', industry: 'Fashion', age: 2, flagged: 2, cnp: 36.4, settlement: '3+ Days', chargeback: 3.6, refund: 8.2 },
-      { name: 'PureWater Filters', industry: 'Home Goods', age: 1, flagged: 3, cnp: 49.0, settlement: '3+ Days', chargeback: 4.5, refund: 9.0 },
-      { name: 'CityTours Agency', industry: 'Travel', age: 3, flagged: 1, cnp: 20.5, settlement: 'Next Day', chargeback: 1.3, refund: 4.3 },
-      { name: 'PixelArt Studio', industry: 'Digital Services', age: 2, flagged: 2, cnp: 40.2, settlement: '2 Days', chargeback: 2.9, refund: 6.7 },
-      { name: 'TastyTreats Bakery', industry: 'Food', age: 5, flagged: 0, cnp: 11.2, settlement: 'Next Day', chargeback: 0.6, refund: 2.9 },
-      { name: 'GlowSpa Salon', industry: 'Beauty', age: 4, flagged: 1, cnp: 29.3, settlement: '2 Days', chargeback: 1.8, refund: 5.4 },
-      { name: 'Adventure Gear', industry: 'Outdoor', age: 2, flagged: 2, cnp: 37.8, settlement: '3+ Days', chargeback: 3.4, refund: 7.9 },
-      { name: 'SmartTech Gadgets', industry: 'Electronics', age: 3, flagged: 1, cnp: 23.4, settlement: '2 Days', chargeback: 1.6, refund: 4.7 }
-    ];
+      const tbody = d3.select('#riskMatrix tbody');
+      const rows = tbody.selectAll('tr').data(merchants).enter().append('tr');
+      rows.selectAll('td')
+        .data(d => [
+          `${d.name} (${d.industry})`,
+          d.age,
+          d.flagged,
+          d.cnp.toFixed(1) + '%',
+          d.settlement,
+          d.chargeback.toFixed(1) + '%',
+          d.refund.toFixed(1) + '%',
+          d.riskScore
+        ])
+        .enter().append('td').text(d => d);
 
-    merchants.forEach(m => {
-      const flagScore = m.flagged * 20;
-      const cnpScore = (m.cnp / 50) * 20;
-      const settlementScore = m.settlement === 'Next Day' ? 5 : m.settlement === '2 Days' ? 15 : 25;
-      const chargebackScore = (m.chargeback / 5) * 25;
-      const refundScore = (m.refund / 10) * 15;
-      const ageWeight = m.age <= 2 ? 1.2 : m.age <= 4 ? 1.0 : 0.8;
-      m.riskScore = Math.min(100, Math.round((flagScore + cnpScore + settlementScore + chargebackScore + refundScore) * ageWeight));
-    });
-
-    const tbody = d3.select('#riskMatrix tbody');
-    const rows = tbody.selectAll('tr').data(merchants).enter().append('tr');
-    rows.selectAll('td')
-      .data(d => [
-        `${d.name} (${d.industry})`,
-        d.age,
-        d.flagged,
-        d.cnp.toFixed(1) + '%',
-        d.settlement,
-        d.chargeback.toFixed(1) + '%',
-        d.refund.toFixed(1) + '%',
-        d.riskScore
-      ])
-      .enter().append('td').text(d => d);
-
-    // Markdown Content
-    fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch Markdown file');
-        return response.text();
-      })
-      .then(data => {
-        document.getElementById('markdown-content').innerHTML = marked.parse(data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('markdown-content').innerHTML = '<p>Error loading Compliance Intelligence content. Please try again later.</p>';
-      });
+      // Markdown Content
+      fetch('https://raw.githubusercontent.com/eolvera/funbox/main/risk_management.md')
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to fetch Markdown file');
+          return response.text();
+        })
+        .then(data => {
+          document.getElementById('markdown-content').innerHTML = marked.parse(data);
+        })
+        .catch(error => {
+          console.error('Error loading Markdown:', error);
+          document.getElementById('markdown-content').innerHTML = '<p>Error loading Compliance Intelligence content. Please try again later.</p>';
+        });
+    } catch (error) {
+      console.error('JavaScript Error:', error);
+    }
   </script>
 </body>
 </html>
