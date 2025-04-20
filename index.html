@@ -178,6 +178,115 @@
     <div class="comment">
       This visualization aggregates MTD portfolio metrics (Sales, Credits, Chargebacks, Deposits, Returns) to provide a high-level view of portfolio health. In real-world scenarios, it helps identify anomalies (e.g., high chargeback spikes) for immediate investigation, enabling proactive risk mitigation.
     </div>
+    <script>
+    // Pie chart for Card Present / Not Present
+    new Chart(document.getElementById("cardPieChart"), {
+      type: "pie",
+      data: {
+        labels: ["Card Present", "Card Not Present"],
+        datasets: [{
+          data: [62, 38],
+          backgroundColor: ["#34d399", "#f87171"],
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+
+    // YTD Merchant Volume Chart
+    new Chart(document.getElementById("ytdVolumeChart"), {
+      type: "line",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [{
+          label: "Volume ($)",
+          data: [12000, 15000, 13000, 18000, 17000, 20000, 19000, 22000, 21000, 25000, 24000, 26000],
+          borderColor: "#3b82f6",
+          backgroundColor: "rgba(59, 130, 246, 0.1)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: false
+          }
+        }
+      }
+    });
+
+    // Top Processing Days Chart
+    new Chart(document.getElementById('topProcessingDaysChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Apr 1', 'Apr 3', 'Apr 5', 'Apr 7', 'Apr 10', 'Apr 12', 'Apr 14', 'Apr 16', 'Apr 18', 'Apr 20'],
+        datasets: [{
+          label: 'Processing Volume ($)',
+          data: [12000, 15000, 13000, 18000, 17000, 20000, 19000, 22000, 21000, 25000],
+          backgroundColor: '#3b82f6',
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // ACH Return Codes Chart
+    new Chart(document.getElementById('achReturnCodesChart'), {
+      type: 'pie',
+      data: {
+        labels: ['R01 - Insufficient Funds', 'R03 - No Account/Unable to Locate', 'R04 - Invalid Account Number'],
+        datasets: [{
+          data: [45, 30, 25],
+          backgroundColor: ['#f87171', '#fbbf24', '#34d399'],
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+
+    // Geographical Payment Volumes Map
+    const map = L.map('geoMap').setView([37.7749, -122.4194], 4); // Centered on USA
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const regions = [
+      { location: [34.0522, -118.2437], volume: 50000, name: 'Los Angeles' },
+      { location: [40.7128, -74.0060], volume: 75000, name: 'New York' },
+      { location: [41.8781, -87.6298], volume: 60000, name: 'Chicago' },
+    ];
+
+    regions.forEach(region => {
+      L.circle(region.location, {
+        color: 'blue',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.5,
+        radius: region.volume
+      }).addTo(map).bindPopup(`${region.name}: $${region.volume.toLocaleString()}`);
+    });
+  </script>
   </section>
 
   <section id="project-board">
