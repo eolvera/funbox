@@ -1,0 +1,152 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AML Transaction Risk Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            text-align: center; 
+        }
+        .bar { 
+            fill: #4682b4; 
+        }
+        .bar:hover { 
+            fill: #ffa500; 
+        }
+        .axis text { 
+            font-size: 12px; 
+        }
+        .axis path, .axis line { 
+            fill: none; 
+            stroke: #333; 
+            shape-rendering: crispEdges; 
+        }
+        h1 { 
+            font-size: 24px; 
+            color: #333; 
+        }
+        p { 
+            font-size: 14px; 
+            color: #555; 
+            max-width: 600px; 
+            margin: 10px auto; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Cryptocurrency Transaction Risk by Merchant</h1>
+    <p>Interactive visualization of high-risk cryptocurrency transactions, flagged using SQL for AML compliance.</p>
+    <svg id="chart" width="600" height="400"></svg>
+    <script>
+        // Simulated SQL output (from aml_transaction_analysis.sql)
+        const data = [
+            { merchant_id: "MERCH001", high_risk_count: 2, avg_transaction_amount: 17500 },
+            { merchant_id: "MERCH003", high_risk_count: 1, avg_transaction_amount: 8000 },
+            { merchant_id: "MERCH002", high_risk_count: 0, avg_transaction_amount: 500 },
+            { merchant_id: "MERCH004", high_risk_count: 0, avg_transaction_amount: 300 }
+        ];
+
+        // Set up SVG dimensions
+        const margin = { top: 20, right: 20, bottom: 70, left: 50 };
+        const width = 600 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        const svg = d3.select("#chart")
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Set up scales
+        const x = d3.scaleBand()
+            .domain(data.map(d => d.merchant_id))
+            .range([0, width])
+            .padding(0.1);
+
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.high_risk_count) + 1])
+            .range([height, 0]);
+
+        // Create bars
+        svg.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => x(d.merchant_id))
+            .attr("y", d => y(d.high_risk_count))
+            .attr("width", x.bandwidth())
+            .attr("height", d => height - y(d.high_risk_count))
+            .append("title")
+            .text(d => `Avg Amount: $${d.avg_transaction_amount.toFixed(2)}`);
+
+        // Add axes
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "rotate(-45)")
+            .style("text-anchor", "end");
+
+        svg.append("g")
+            .attr("class", "axis")
+            .call(d3.axisLeft(y));
+
+        // Add labels
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", height + margin.bottom - 10)
+            .style("text-anchor", "middle")
+            .text("Merchant ID");
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -margin.left + 15)
+            .style("text-anchor", "middle")
+            .text("High-Risk Transactions");
+    </script>
+</body>
+</html>
