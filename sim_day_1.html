@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Risk Ops: Merchant Watch</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    .merchant-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .merchant-header {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .risk-chart {
+      max-width: 600px;
+      margin: 1rem 0;
+    }
+    .risk-list li {
+      margin: 0.25rem 0;
+    }
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .buttons button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .approve { background: #4CAF50; color: white; }
+    .docs { background: #FFC107; color: black; }
+    .hold { background: #F44336; color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="merchant-card">
+    <div class="merchant-header">🧾 Red Lantern Pub</div>
+    <p><em>Big football weekend—group tabs closing at once. New POS system might cause some splits.</em></p>
+
+    <canvas id="riskChart" class="risk-chart"></canvas>
+
+    <ul class="risk-list">
+      <li>🎯 High Ticket: 3 above $120</li>
+      <li>💳 Duplicate Cards: 1</li>
+      <li>💸 Unmatched Credits: 0</li>
+      <li>⚠️ Chargebacks: 0</li>
+      <li>🏦 ACH Returns: 0</li>
+      <li>📊 Settlement Volume: $4,800</li>
+    </ul>
+
+    <div class="buttons">
+      <button class="hold">🛑 Hold Funding</button>
+      <button class="docs">📄 Request Docs</button>
+      <button class="approve">✅ Approve</button>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('riskChart');
+    const riskChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['High Ticket', 'Duplicate Card', 'Unmatched Credit', 'Chargeback', 'ACH Return'],
+        datasets: [{
+          label: 'Risk Count',
+          data: [3, 1, 0, 0, 0],
+          backgroundColor: [
+            '#f39c12',
+            '#3498db',
+            '#9b59b6',
+            '#e74c3c',
+            '#2ecc71'
+          ],
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Risk Indicators - Day 1'
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 5 }
+        }
+      }
+    });
+
+    document.querySelector('.hold').onclick = () => alert("Funds held. Monitoring ongoing.");
+    document.querySelector('.docs').onclick = () => alert("Docs requested. Merchant will submit invoices.");
+    document.querySelector('.approve').onclick = () => alert("Approved. Funds released.");
+  </script>
+
+</body>
+</html>
