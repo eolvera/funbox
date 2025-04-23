@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -45,108 +6,425 @@
     <title>AML Transaction Risk Visualization</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            text-align: center; 
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7fa;
+            color: #333;
         }
-        .bar { 
-            fill: #4682b4; 
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(90deg, #0077b5, #00a1d6);
+            color: white;
+            border-radius: 8px;
         }
-        .bar:hover { 
-            fill: #ffa500; 
+        h1 {
+            font-size: 28px;
+            margin: 0;
         }
-        .axis text { 
-            font-size: 12px; 
+        .description {
+            font-size: 16px;
+            max-width: 800px;
+            margin: 10px auto;
         }
-        .axis path, .axis line { 
-            fill: none; 
-            stroke: #333; 
-            shape-rendering: crispEdges; 
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        h1 { 
-            font-size: 24px; 
-            color: #333; 
+        .chart-area {
+            text-align: center;
         }
-        p { 
-            font-size: 14px; 
-            color: #555; 
-            max-width: 600px; 
-            margin: 10px auto; 
+        .bar {
+            fill: url(#bar-gradient);
+            transition: opacity 0.3s;
+        }
+        .bar:hover {
+            opacity: 0.8;
+        }
+        .axis text {
+            font-size: 12px;
+            fill: #555;
+        }
+        .axis path, .axis line {
+            fill: none;
+            stroke: #888;
+            shape-rendering: crispEdges;
+        }
+        .legend {
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .legend rect {
+            width: 18px;
+            height: 18px;
+        }
+        .controls {
+            margin: 10px 0;
+            text-align: center;
+        }
+        .reset-btn {
+            padding: 8px 16px;
+            background-color: #0077b5;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .reset-btn:hover {
+            background-color: #005f8c;
+        }
+        .details {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+        td input {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+        a {
+            color: #0077b5;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .description {
+                font-size: 14px;
+            }
+            table {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Cryptocurrency Transaction Risk by Merchant</h1>
-    <p>Interactive visualization of high-risk cryptocurrency transactions, flagged using SQL for AML compliance.</p>
-    <svg id="chart" width="600" height="400"></svg>
+    <header>
+        <h1>Cryptocurrency Transaction Risk Analysis</h1>
+        <a href="index.html" style="color: white;">Back to Portfolio</a>
+    </header>
+    <div class="container">
+        <p class="description">
+            Interactive visualization of cryptocurrency transactions flagged for AML compliance using SQL. 
+            Includes high-risk and low-risk merchants with transaction values in thousands. 
+            Click bars to view details, reset the chart, or edit the table below to update the visualization dynamically.
+        </p>
+        <div class="controls">
+            <button class="reset-btn" onclick="resetChart()">Reset Chart</button>
+        </div>
+        <div class="chart-area">
+            <svg id="chart" width="100%" height="400"></svg>
+        </div>
+        <div class="legend"></div>
+        <div class="details" id="details"></div>
+        <div class="table-container">
+            <table id="risk-table">
+                <thead>
+                    <tr>
+                        <th>Merchant ID</th>
+                        <th>High Risk Volume</th>
+                        <th>Low Risk Volume</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <footer>
+        Created by Eddie J. Olvera | 
+        <a href="https://www.linkedin.com/in/eddiejolvera/" target="_blank">LinkedIn</a> | April 2025
+    </footer>
     <script>
-        // Simulated SQL output (from aml_transaction_analysis.sql)
-        const data = [
-            { merchant_id: "MERCH001", high_risk_count: 2, avg_transaction_amount: 17500 },
-            { merchant_id: "MERCH003", high_risk_count: 1, avg_transaction_amount: 8000 },
-            { merchant_id: "MERCH002", high_risk_count: 0, avg_transaction_amount: 500 },
-            { merchant_id: "MERCH004", high_risk_count: 0, avg_transaction_amount: 300 }
+        // Data with high and low risk volumes
+        let data = [
+            { merchant_id: "MERCH001", high_risk_count: 2, low_risk_count: 0, avg_transaction_amount: 17500 },
+            { merchant_id: "MERCH003", high_risk_count: 1, low_risk_count: 0, avg_transaction_amount: 8000 },
+            { merchant_id: "MERCH002", high_risk_count: 0, low_risk_count: 1, avg_transaction_amount: 500 },
+            { merchant_id: "MERCH004", high_risk_count: 0, low_risk_count: 1, avg_transaction_amount: 300 },
+            { merchant_id: "MERCH005", high_risk_count: 0, low_risk_count: 2, avg_transaction_amount: 1900 },
+            { merchant_id: "MERCH006", high_risk_count: 0, low_risk_count: 2, avg_transaction_amount: 1350 }
         ];
 
         // Set up SVG dimensions
-        const margin = { top: 20, right: 20, bottom: 70, left: 50 };
+        const margin = { top: 20, right: 20, bottom: 100, left: 50 };
+        const svg = d3.select("#chart");
         const width = 600 - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
 
-        const svg = d3.select("#chart")
-            .append("g")
+        // Responsive width
+        svg.attr("width", "100%")
+           .attr("viewBox", `0 0 ${600} ${400}`);
+
+        const g = svg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // Set up scales
-        const x = d3.scaleBand()
-            .domain(data.map(d => d.merchant_id))
-            .range([0, width])
-            .padding(0.1);
+        // Gradient for bars
+        const defs = svg.append("defs");
+        const gradient = defs.append("linearGradient")
+            .attr("id", "bar-gradient")
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "#00a1d6");
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "#0077b5");
 
-        const y = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.high_risk_count) + 1])
-            .range([height, 0]);
+        // Function to update chart
+        function updateChart() {
+            try {
+                // Update scales
+                const x = d3.scaleBand()
+                    .domain(data.map(d => d.merchant_id))
+                    .range([0, width])
+                    .padding(0.2);
 
-        // Create bars
-        svg.selectAll(".bar")
-            .data(data)
-            .enter()
-            .append("rect")
-            .attr("class", "bar")
-            .attr("x", d => x(d.merchant_id))
-            .attr("y", d => y(d.high_risk_count))
-            .attr("width", x.bandwidth())
-            .attr("height", d => height - y(d.high_risk_count))
-            .append("title")
-            .text(d => `Avg Amount: $${d.avg_transaction_amount.toFixed(2)}`);
+                const y = d3.scaleLinear()
+                    .domain([0, d3.max(data, d => d.high_risk_count) + 1 || 1])
+                    .range([height, 0]);
 
-        // Add axes
-        svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-            .attr("transform", "rotate(-45)")
-            .style("text-anchor", "end");
+                // Update bars
+                const bars = g.selectAll(".bar")
+                    .data(data, d => d.merchant_id);
 
-        svg.append("g")
-            .attr("class", "axis")
-            .call(d3.axisLeft(y));
+                bars.enter()
+                    .append("rect")
+                    .attr("class", "bar")
+                    .attr("x", d => x(d.merchant_id))
+                    .attr("y", height)
+                    .attr("width", x.bandwidth())
+                    .attr("height", 0)
+                    .on("click", function(event, d) {
+                        d3.select("#details")
+                            .html(`<strong>Merchant: ${d.merchant_id}</strong><br>
+                                   High-Risk Transactions: ${d.high_risk_count}<br>
+                                   Low-Risk Transactions: ${d.low_risk_count}<br>
+                                   Avg Transaction Amount: $${(d.avg_transaction_amount / 1000).toFixed(1)}K`);
+                    })
+                    .merge(bars)
+                    .transition()
+                    .duration(500)
+                    .attr("x", d => x(d.merchant_id))
+                    .attr("y", d => y(d.high_risk_count))
+                    .attr("width", x.bandwidth())
+                    .attr("height", d => height - y(d.high_risk_count));
 
-        // Add labels
-        svg.append("text")
-            .attr("x", width / 2)
-            .attr("y", height + margin.bottom - 10)
-            .style("text-anchor", "middle")
-            .text("Merchant ID");
+                bars.exit().remove();
 
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("x", -height / 2)
-            .attr("y", -margin.left + 15)
-            .style("text-anchor", "middle")
-            .text("High-Risk Transactions");
+                // Update axes
+                g.selectAll(".x-axis").remove();
+                g.append("g")
+                    .attr("class", "axis x-axis")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(d3.axisBottom(x))
+                    .selectAll("text")
+                    .attr("transform", "rotate(-45)")
+                    .style("text-anchor", "end");
+
+                g.selectAll(".y-axis").remove();
+                g.append("g")
+                    .attr("class", "axis y-axis")
+                    .call(d3.axisLeft(y));
+
+                // Update labels
+                g.selectAll(".axis-label").remove();
+                g.append("text")
+                    .attr("class", "axis-label")
+                    .attr("x", width / 2)
+                    .attr("y", height + margin.bottom - 10)
+                    .style("text-anchor", "middle")
+                    .text("Merchant ID");
+
+                g.append("text")
+                    .attr("class", "axis-label")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", -height / 2)
+                    .attr("y", -margin.left + 15)
+                    .style("text-anchor", "middle")
+                    .text("High-Risk Transactions");
+            } catch (error) {
+                console.error("Error updating chart:", error);
+            }
+        }
+
+        // Initial chart render
+        try {
+            updateChart();
+        } catch (error) {
+            console.error("Error initializing chart:", error);
+        }
+
+        // Add legend
+        try {
+            const legend = d3.select(".legend")
+                .append("svg")
+                .attr("width", 200)
+                .attr("height", 20);
+
+            legend.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("width", 18)
+                .attr("height", 18)
+                .attr("fill", "url(#bar-gradient)");
+
+            legend.append("text")
+                .attr("x", 24)
+                .attr("y", 14)
+                .text("High-Risk Transactions");
+        } catch (error) {
+            console.error("Error creating legend:", error);
+        }
+
+        // Create editable table
+        try {
+            const tableBody = d3.select("#risk-table tbody");
+            const rows = tableBody.selectAll("tr")
+                .data(data)
+                .enter()
+                .append("tr");
+
+            rows.append("td").text(d => d.merchant_id);
+            rows.append("td")
+                .append("input")
+                .attr("type", "number")
+                .attr("value", d => d.high_risk_count)
+                .attr("min", 0)
+                .attr("step", 1)
+                .on("input", function(event, d) {
+                    try {
+                        const value = +this.value;
+                        if (value >= 0) {
+                            d.high_risk_count = value;
+                            updateChart();
+                        }
+                    } catch (error) {
+                        console.error("Error updating high_risk_count:", error);
+                    }
+                });
+            rows.append("td")
+                .append("input")
+                .attr("type", "number")
+                .attr("value", d => d.low_risk_count)
+                .attr("min", 0)
+                .attr("step", 1)
+                .on("input", function(event, d) {
+                    try {
+                        const value = +this.value;
+                        if (value >= 0) {
+                            d.low_risk_count = value;
+                            updateChart();
+                        }
+                    } catch (error) {
+                        console.error("Error updating low_risk_count:", error);
+                    }
+                });
+        } catch (error) {
+            console.error("Error creating table:", error);
+        }
+
+        // Reset chart function
+        function resetChart() {
+            try {
+                d3.select("#details").html("");
+                data = [
+                    { merchant_id: "MERCH001", high_risk_count: 2, low_risk_count: 0, avg_transaction_amount: 17500 },
+                    { merchant_id: "MERCH003", high_risk_count: 1, low_risk_count: 0, avg_transaction_amount: 8000 },
+                    { merchant_id: "MERCH002", high_risk_count: 0, low_risk_count: 1, avg_transaction_amount: 500 },
+                    { merchant_id: "MERCH004", high_risk_count: 0, low_risk_count: 1, avg_transaction_amount: 300 },
+                    { merchant_id: "MERCH005", high_risk_count: 0, low_risk_count: 2, avg_transaction_amount: 1900 },
+                    { merchant_id: "MERCH006", high_risk_count: 0, low_risk_count: 2, avg_transaction_amount: 1350 }
+                ];
+                updateChart();
+                // Update table inputs
+                const tableBody = d3.select("#risk-table tbody");
+                tableBody.selectAll("tr").remove();
+                const newRows = tableBody.selectAll("tr")
+                    .data(data)
+                    .enter()
+                    .append("tr");
+                newRows.append("td").text(d => d.merchant_id);
+                newRows.append("td")
+                    .append("input")
+                    .attr("type", "number")
+                    .attr("value", d => d.high_risk_count)
+                    .attr("min", 0)
+                    .attr("step", 1)
+                    .on("input", function(event, d) {
+                        try {
+                            const value = +this.value;
+                            if (value >= 0) {
+                                d.high_risk_count = value;
+                                updateChart();
+                            }
+                        } catch (error) {
+                            console.error("Error updating high_risk_count:", error);
+                        }
+                    });
+                newRows.append("td")
+                    .append("input")
+                    .attr("type", "number")
+                    .attr("value", d => d.low_risk_count)
+                    .attr("min", 0)
+                    .attr("step", 1)
+                    .on("input", function(event, d) {
+                        try {
+                            const value = +this.value;
+                            if (value >= 0) {
+                                d.low_risk_count = value;
+                                updateChart();
+                            }
+                        } catch (error) {
+                            console.error("Error updating low_risk_count:", error);
+                        }
+                    });
+            } catch (error) {
+                console.error("Error resetting chart:", error);
+            }
+        }
     </script>
 </body>
 </html>
